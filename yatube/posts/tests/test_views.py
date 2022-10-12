@@ -9,9 +9,8 @@ from datetime import datetime as dt
 import tempfile
 import shutil
 from PIL import Image, ImageChops
-from http import HTTPStatus
 
-from ..models import Comment, Group, Follow, Post, User
+from ..models import Group, Follow, Post, User
 from ..forms import PostForm
 from ..utils import POSTS_COUNT
 
@@ -29,12 +28,12 @@ class PostsViewsTests(TestCase):
         cls.my_author2 = User.objects.create_user(username='AnotherAuthor')
         # Создаём картинку
         cls.test_gif = (
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
         )
         cls.picture = SimpleUploadedFile(
             name='pic.gif',
@@ -257,7 +256,7 @@ class PostsViewsTests(TestCase):
         # Создаём пост для проверки подписки
         # этот пост портит тест на изображение,
         # поэтому он тут, а не в сетапе
-        another_post = Post.objects.create(
+        Post.objects.create(
             text='Тестовый текст поста',
             author=self.my_author2,
             pub_date=dt.now()
@@ -293,12 +292,12 @@ class PostsViewsTests(TestCase):
                 'posts:follow_index'))
         count1 = len(response0.context['posts'])
         # 2) подписываем автора 1 на автора 2
-        response1 = self.authorized_client.get(
+        self.authorized_client.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.my_author2}))
         # 3) публикуем от имени автора 2 новый пост
-        another_post = Post.objects.create(
+        Post.objects.create(
             text='Тестовый текст поста',
             author=self.my_author2,
             pub_date=dt.now())

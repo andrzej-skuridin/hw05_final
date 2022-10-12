@@ -133,6 +133,7 @@ def follow_index(request):
                    page_obj=paginator(request, posts))
     return render(request, 'posts/follow.html', context)
 
+
 @login_required
 def profile_follow(request, username):
     # Подписаться на автора
@@ -148,6 +149,7 @@ def profile_follow(request, username):
         )
     return redirect('posts:profile', username=username)
 
+
 @login_required
 def profile_unfollow(request, username):
     # Отписаться от автора
@@ -156,5 +158,3 @@ def profile_unfollow(request, username):
         author=get_object_or_404(User, username=username)
     ).delete()
     return redirect('posts:profile', username=username)
-
-

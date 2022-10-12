@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
+
 def page_not_found(request, exception):
     # Переменная exception содержит отладочную информацию;
     # выводить её в шаблон не нужно
