@@ -1,0 +1,31 @@
+{% load static %}
+{% load thumbnail %}
+
+<ul>
+  {% if post.group %}
+  <li>
+     Группа: <a href="{% url 'posts:group_list' post.group.slug %}">
+      {{ post.group.title }}
+    </a>
+  </li>
+  {% endif %}
+  <li> 
+      Автор: 
+      <a href="{% url 'posts:profile' post.author %}"
+      > {{ post.author.username }} </a> 
+    </li>
+    <li> 
+      Дата публикации: {{ post.pub_date|date:"d E Y" }} 
+    </li>
+</ul>
+  <p>
+    {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+      <img class="card-img my-2" src="{{ im.url }}">
+    {% endthumbnail %}
+    {{ post.text }} 
+    <a href="{% url 'posts:post_detail' post.id %}"
+    >(подробная информация) </a> 
+  </p> 
+  
+        
+        

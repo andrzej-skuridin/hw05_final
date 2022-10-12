@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block title %}
+Пост {{ short_post }} 
+{% endblock %}
+
+
+{% block content %}
+<div class="container py-2">  
+  <div class="row">
+    <aside class="col-12 col-md-3">
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          Дата публикации: {{ post.pub_date|date:"d E Y" }} 
+        </li>
+        {% if post.group %}   
+        <li class="list-group-item">
+          Группа: <a href="{% url 'posts:group_list' post.group.slug %}">
+            {{ post.group.title }}
+          </a>
+        </li>
+        {% endif %}
+        <li class="list-group-item">
+          Автор: 
+          <a href="{% url 'posts:profile' post.author %}"
+          > {{ post.author }} </a>
+        </li>
+        <li class="list-group-item d-flex justify-content-between
+          align-items-center"
+        >
+          Всего постов автора: {{ posts.count }}
+        </li>
+      </ul>
+    </aside>
+    <article class="col-12 col-md-9">
+      <p>
+        {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+          <img class="card-img my-2" src="{{ im.url }}">
+        {% endthumbnail %}
+        {{ post.text }} 
+      </p>
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+            <div class="alert alert-success" role="alert">
+              {{ message }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      <div class="col-md-2  offset-md-6">
+        <form action="{% url 'posts:post_edit' post.id %}">
+        <button type="submit" class="btn btn-primary">
+        {% if imposter %}
+        Вы не можете редактировать это сообщение
+        {% else %}
+        Редактировать
+        {% endif %}
+        </button></form>
+      </div>
+      {% include 'posts/includes/post_comments.html' %}
+    </article>
+  </div>
+</div>
+{% endblock %}

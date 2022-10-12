@@ -1,0 +1,6 @@
+{% for post in page_obj %}
+  
+  {% include 'includes/post_template.html' %}
+  {% if not forloop.last %}<hr>{% endif %}
+
+{% endfor %}

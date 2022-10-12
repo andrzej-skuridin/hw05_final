@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}
+Подписки
+{% endblock %}
+
+
+{% block content %}
+  <div class="container py-2">
+    <h1>Последние обновления моих подписок</h1>
+      <h3>
+        Я слежу за {{ count }} авторами
+      </h3>
+    {% include 'posts/includes/switcher.html' %}
+    {% include 'posts/includes/posts_cycle.html' %}
+    {% include 'posts/includes/paginator.html' %}
+  </div>
+{% endblock %}
