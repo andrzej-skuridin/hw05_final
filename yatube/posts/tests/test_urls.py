@@ -5,6 +5,11 @@ from http import HTTPStatus
 
 from ..models import Group, Post, User
 
+NAME_USER = 'IamAuthor'
+NAME_GROUP = 'IamGroup'
+SLUG = 'IamGroupSlug'
+POST_TEXT = 'Тестовый текст поста'
+
 
 class PostsURLTests(TestCase):
     @classmethod
@@ -12,12 +17,12 @@ class PostsURLTests(TestCase):
         super().setUpClass()
         # Создаём группу
         cls.group = Group.objects.create(
-            title='IamGroup',
-            slug='IamGroupSlug')
+            title=NAME_GROUP,
+            slug=SLUG)
         # Создаём пост (внимание на то, что тут внутри ещё и автор воздаётся!)
         cls.post = Post.objects.create(
-            text='Тестовый текст поста',
-            author=User.objects.create_user(username='IamAuthor'),
+            text=POST_TEXT,
+            author=User.objects.create_user(username=NAME_USER),
             pub_date=dt.now())
         cls.list_addresses = [
             '/unexisting_page/',

@@ -15,6 +15,35 @@ from ..forms import PostForm
 from ..utils import POSTS_COUNT
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+NAME_USER = 'IamAuthor'
+ANOTHER_NAME_USER = 'AnotherAuthor'
+NAME_GROUP = 'IamGroup'
+ANOTHER_NAME_GROUP = 'IamAnotherGroup'
+DESCRIPTION = 'Тестовое описание'
+SLUG = 'IamGroupSlug'
+ANOTHER_SLUG = 'IamAnotherGroupSlug'
+POST_TEXT = 'Тестовый текст поста'
+
+URL_REVERSE = {
+    'profile1': reverse('posts:profile',
+                        kwargs={'username': NAME_USER}),
+    'profile2': reverse('posts:profile',
+                        kwargs={'username': ANOTHER_NAME_USER}),
+    'posts_follow2': reverse(
+                'posts:profile_follow',
+                kwargs={'username': ANOTHER_NAME_USER}),
+    'posts_follow': reverse('posts:follow_index'),
+    'post_create': reverse('posts:post_create'),
+    'index': reverse('posts:index'),
+    'group1': reverse('posts:group_list',
+                      kwargs={'slug': SLUG}),
+    'group2': reverse(
+        'posts:group_list', kwargs={'slug': ANOTHER_SLUG}),
+    'posts_unfollow2': reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': ANOTHER_NAME_USER})
+
+}
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
@@ -23,9 +52,9 @@ class PostsViewsTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Создаём автора
-        cls.my_author1 = User.objects.create_user(username='IamAuthor')
+        cls.my_author1 = User.objects.create_user(username=NAME_USER)
         # Автор для теста подписки
-        cls.my_author2 = User.objects.create_user(username='AnotherAuthor')
+        cls.my_author2 = User.objects.create_user(username=ANOTHER_NAME_USER)
         # Создаём картинку
         cls.test_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
@@ -42,14 +71,14 @@ class PostsViewsTests(TestCase):
 
         # Создаём группы
         cls.group = Group.objects.create(
-            title='IamGroup',
-            slug='IamGroupSlug')
+            title=NAME_GROUP,
+            slug=SLUG)
         cls.another_group = Group.objects.create(
-            title='IamAnotherGroup',
-            slug='IamAnotherGroupSlug')
+            title=ANOTHER_NAME_GROUP,
+            slug=ANOTHER_SLUG)
         # Создаём пост
         cls.post = Post.objects.create(
-            text='Тестовый текст поста',
+            text=POST_TEXT,
             author=cls.my_author1,
             pub_date=dt.now(),
             group=cls.group,
@@ -76,9 +105,8 @@ class PostsViewsTests(TestCase):
 
     def test_post_detail_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
-        pk = PostsViewsTests.post.pk
         response = self.authorized_client.get(
-            reverse('posts:post_detail', kwargs={'post_id': pk}))
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}))
         context_types = {
             'post': Post,
             'posts': models.query.QuerySet,
@@ -93,7 +121,7 @@ class PostsViewsTests(TestCase):
     def test_create_post_context(self):
         """Шаблон create_post сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse('posts:post_create'))
+            URL_REVERSE['post_create'])
         context_types = {'form': PostForm}
         for value, expected in context_types.items():
             with self.subTest(f'Проверяется {value}'):
@@ -103,9 +131,8 @@ class PostsViewsTests(TestCase):
     def test_edit_post_context(self):
         """Шаблон create_post сформирован с
         правильным контекстом при редактировании поста."""
-        pk = PostsViewsTests.post.pk
         response = self.authorized_client.get(
-            reverse('posts:post_edit', kwargs={'post_id': pk}))
+            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}))
         context_types = {'form': PostForm}
         for value, expected in context_types.items():
             with self.subTest(f'Проверяется {value}'):
@@ -114,7 +141,7 @@ class PostsViewsTests(TestCase):
 
     def test_index_context(self):
         """Шаблон index сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse('posts:index'))
+        response = self.authorized_client.get(URL_REVERSE['index'])
         context_types = {'posts': models.query.QuerySet}
         for value, expected in context_types.items():
             with self.subTest(f'Проверяется {value}'):
@@ -123,10 +150,8 @@ class PostsViewsTests(TestCase):
 
     def test_group_list_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
-        group_slug = PostsViewsTests.group.slug
         response = self.authorized_client.get(
-            reverse('posts:group_list',
-                    kwargs={'slug': group_slug}))
+            URL_REVERSE['group1'])
         context_types = {
             'posts': models.query.QuerySet,
             'group': Group}
@@ -139,8 +164,7 @@ class PostsViewsTests(TestCase):
     def test_profile_context(self):
         """Шаблон profile сформирован с правильным контекстом."""
         response = self.authorized_client.get(
-            reverse('posts:profile',
-                    kwargs={'username': self.my_author1.username}))
+            URL_REVERSE['profile1'])
         context_types = {
             'posts': models.query.QuerySet,
             'posts_author': User}
@@ -168,7 +192,7 @@ class PostsViewsTests(TestCase):
                     self.assertEqual(len(response.context[data[1]]), 1)
 
                 Post.objects.create(
-                    text='Тестовый текст поста 5',
+                    text=POST_TEXT,
                     author=self.my_author1,
                     pub_date=dt.now()
                 )
@@ -185,18 +209,16 @@ class PostsViewsTests(TestCase):
     def test_post_appears_in_correct_group(self):
         # проверка появления в правильной группе (подсчёт, сколько было)
         response = self.authorized_client.get(
-            reverse(
-                'posts:group_list', kwargs={'slug': self.group.slug}))
+            URL_REVERSE['group1'])
         self.assertEqual(len(response.context['posts']), 1)
         # проверка появления в неправильной группе (подсчёт, сколько было)
         response = self.authorized_client.get(
-            reverse(
-                'posts:group_list', kwargs={'slug': self.another_group.slug}))
+            URL_REVERSE['group2'])
         self.assertEqual(len(response.context['posts']), 0)
 
         # делаем новый пост
         Post.objects.create(
-            text='Тестовый текст поста 5',
+            text=POST_TEXT,
             author=self.my_author1,
             group=self.group,
             pub_date=dt.now()
@@ -204,13 +226,11 @@ class PostsViewsTests(TestCase):
 
         # проверка появления в правильной группе (подсчёт, сколько стало)
         response = self.authorized_client.get(
-            reverse(
-                'posts:group_list', kwargs={'slug': self.group.slug}))
+            URL_REVERSE['group1'])
         self.assertEqual(len(response.context['posts']), 2)
         # проверка появления в неправильной группе (подсчёт, сколько стало)
         response = self.authorized_client.get(
-            reverse(
-                'posts:group_list', kwargs={'slug': self.another_group.slug}))
+            URL_REVERSE['group2'])
         self.assertEqual(len(response.context['posts']), 0)
 
     def test_image_in_context(self):
@@ -235,19 +255,19 @@ class PostsViewsTests(TestCase):
     def test_cache_index(self):
         """Проверяем, что index кэшируется."""
         check1 = self.authorized_client.get(
-            reverse('posts:index')).content
+            URL_REVERSE['index']).content
         # делаем новый пост
         Post.objects.create(
-            text='Тестовый текст поста 5',
+            text=POST_TEXT,
             author=self.user,
             group=self.group
         )
         check2 = self.authorized_client.get(
-            reverse('posts:index')).content
+            URL_REVERSE['index']).content
         self.assertEqual(check1, check2)
         cache.clear()
         check3 = self.authorized_client.get(
-            reverse('posts:index')).content
+            URL_REVERSE['index']).content
         self.assertNotEqual(check3, check1)
 
     def test_follow_unfollow(self):
@@ -257,29 +277,21 @@ class PostsViewsTests(TestCase):
         # этот пост портит тест на изображение,
         # поэтому он тут, а не в сетапе
         Post.objects.create(
-            text='Тестовый текст поста',
+            text=POST_TEXT,
             author=self.my_author2,
             pub_date=dt.now()
         )
         follow_count1 = Follow.objects.count()
         response1 = self.authorized_client.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': self.my_author2}))
+            URL_REVERSE['posts_follow2'])
         self.assertRedirects(
-            response1, reverse(
-                'posts:profile',
-                kwargs={'username': self.my_author2}))
+            response1, URL_REVERSE['profile2'])
         follow_count2 = Follow.objects.count()
         self.assertEqual(follow_count1 + 1, follow_count2)
         response2 = self.authorized_client.get(
-            reverse(
-                'posts:profile_unfollow',
-                kwargs={'username': self.my_author2}))
+            URL_REVERSE['posts_unfollow2'])
         self.assertRedirects(
-            response2, reverse(
-                'posts:profile',
-                kwargs={'username': self.my_author2}))
+            response2, URL_REVERSE['profile2'])
         follow_count3 = Follow.objects.count()
         self.assertEqual(follow_count1, follow_count3)
 
@@ -293,9 +305,7 @@ class PostsViewsTests(TestCase):
         count1 = len(response0.context['posts'])
         # 2) подписываем автора 1 на автора 2
         self.authorized_client.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': self.my_author2}))
+            URL_REVERSE['posts_follow2'])
         # 3) публикуем от имени автора 2 новый пост
         Post.objects.create(
             text='Тестовый текст поста',
@@ -303,8 +313,7 @@ class PostsViewsTests(TestCase):
             pub_date=dt.now())
         # 4) считаем число постов в подписках автора1 (их на 1 больше)
         response2 = self.authorized_client.get(
-            reverse(
-                'posts:follow_index'))
+            URL_REVERSE['posts_follow'])
         count2 = len(response2.context['posts'])
         # проверяем, что у автора1 на 1 пост больше в подписках
         self.assertEqual(count1 + 1, count2)
@@ -314,33 +323,9 @@ class PostsViewsTests(TestCase):
         self.user = self.my_author2
         self.authorized_client.force_login(self.user)
         response3 = self.authorized_client.get(
-            reverse(
-                'posts:follow_index'))
+            URL_REVERSE['posts_follow'])
         count3 = len(response3.context['posts'])
         self.assertEqual(0, count3)
-
-    def test_authorized_comments(self):
-        """Комментировать посты может только авторизованный пользователь"""
-        # проверяем доступ авторизированного пользователя
-        comment_form = {'text': 'Текст комментария'}
-        response1 = self.authorized_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.pk}),
-            data=comment_form)
-        print(response1.status_code)
-        # проверяем доступ неавторизированного пользователя
-        self.guest_client = Client()
-        response2 = self.guest_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.pk}),
-            data=comment_form)
-        # авторизированного должно перенаправить на детали поста,
-        # неавторизированного - на страницу авторизации
-        self.assertRedirects(response1,
-                             f'/posts/{self.post.pk}/')
-        self.assertRedirects(response2,
-                             f'/auth/login/?next='
-                             f'/posts/{self.post.pk}/comment/')
 
     def test_comment_appears_in_post_details(self):
         """После успешной отправки комментарий появляется на странице поста"""
@@ -351,7 +336,7 @@ class PostsViewsTests(TestCase):
         check1 = response1.context.get('comments')
         self.assertEqual(0, len(check1))
         # отправляем комментарий
-        comment_form = {'text': 'Текст комментария'}
+        comment_form = {'text': POST_TEXT}
         self.authorized_client.post(
             reverse('posts:add_comment',
                     kwargs={'post_id': self.post.pk}),
@@ -370,19 +355,19 @@ class PaginatorViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Создаём автора
-        cls.my_author = User.objects.create_user(username='IamAuthor')
+        cls.my_author = User.objects.create_user(username=NAME_USER)
 
         # Создаём группу
         cls.group = Group.objects.create(
-            title='IamGroup',
-            slug='IamGroupSlug'
+            title=NAME_GROUP,
+            slug=SLUG
         )
 
         # Создаём посты
 
         for i in range(POSTS_COUNT + 1):
             Post.objects.create(
-                text='Тестовый текст поста',
+                text=POST_TEXT,
                 author=cls.my_author,
                 pub_date=dt.now(),
                 group=cls.group

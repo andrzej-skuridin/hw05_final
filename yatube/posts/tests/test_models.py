@@ -1,27 +1,33 @@
 from django.test import TestCase
 
-from ..models import Group, Post, User
+from ..models import Group, Post, User, META_STR_LEN
+
+NAME_USER = 'IamAuthor'
+NAME_GROUP = 'IamGroup'
+DESCRIPTION = 'Тестовое описание'
+SLUG = 'IamGroupSlug'
+POST_TEXT = 'Тестовый текст поста'
 
 
 class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
+        cls.user = User.objects.create_user(username=NAME_USER)
         cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='Тестовый слаг',
-            description='Тестовое описание',
+            title=NAME_GROUP,
+            slug=SLUG,
+            description=DESCRIPTION,
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовый пост',
+            text=POST_TEXT,
         )
 
     def test_post_model_correct_str_method(self):
         """Проверяем, что у модели Post корректно работает __str__."""
         actual_result = self.post.__str__()
-        expected_result = self.post.text[:15]
+        expected_result = self.post.text[:META_STR_LEN]
         self.assertEqual(expected_result, actual_result)
 
     def test_group_model_correct_str_method(self):

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+META_STR_LEN = 15
+
 User = get_user_model()
 
 
@@ -8,6 +10,10 @@ class Group(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(verbose_name='Group', unique=True)
     description = models.TextField()
+
+    class Meta:
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
 
     def __str__(self):
         return self.title
@@ -38,10 +44,12 @@ class Post(models.Model):
     )
 
     class Meta:
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
 
     def __str__(self):
-        return self.text[:15]
+        return self.text[:META_STR_LEN]
 
 
 # sprint 6
@@ -62,6 +70,10 @@ class Comment(models.Model):
     created = models.DateTimeField(auto_now_add=True,
                                    verbose_name='Дата комментирования')
 
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
@@ -76,3 +88,11 @@ class Follow(models.Model):
         verbose_name='Автор',
         on_delete=models.CASCADE,
     )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        unique_together = ['user', 'author']
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
