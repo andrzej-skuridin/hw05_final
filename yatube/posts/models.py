@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-META_STR_LEN = 15
+from .consts import META_STR_LEN
 
 User = get_user_model()
 

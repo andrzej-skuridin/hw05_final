@@ -1,12 +1,7 @@
 from django.test import TestCase
 
 from ..models import Group, Post, User, META_STR_LEN
-
-NAME_USER = 'IamAuthor'
-NAME_GROUP = 'IamGroup'
-DESCRIPTION = 'Тестовое описание'
-SLUG = 'IamGroupSlug'
-POST_TEXT = 'Тестовый текст поста'
+from ..consts import *
 
 
 class PostModelTest(TestCase):

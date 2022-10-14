@@ -1,15 +1,13 @@
-from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
-from .utils import paginator
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.cache import cache_page
 
-
-TITLE_LENGTH = 30
-User = get_user_model()
+from .consts import TITLE_LENGTH
+from .forms import CommentForm, PostForm
+from .models import Follow, Group, Post, User
+from .utils import paginator
 
 
 @cache_page(20, key_prefix='index_page')

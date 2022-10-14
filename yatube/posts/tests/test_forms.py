@@ -11,13 +11,10 @@ from PIL import Image, ImageChops
 
 from ..forms import PostForm
 from ..models import Group, Post, User
+from ..consts import *
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
-NAME_USER = 'IamAuthor'
-NAME_GROUP = 'IamGroup'
-SLUG = 'IamGroupSlug'
-POST_TEXT = 'Тестовый текст поста'
 
 URL_REVERSE = {
     'post_create': reverse('posts:post_create'),

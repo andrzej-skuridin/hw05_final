@@ -10,19 +10,11 @@ import tempfile
 import shutil
 from PIL import Image, ImageChops
 
-from ..models import Group, Follow, Post, User
+from ..consts import *
 from ..forms import PostForm
-from ..utils import POSTS_COUNT
+from ..models import Group, Follow, Post, User
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
-NAME_USER = 'IamAuthor'
-ANOTHER_NAME_USER = 'AnotherAuthor'
-NAME_GROUP = 'IamGroup'
-ANOTHER_NAME_GROUP = 'IamAnotherGroup'
-DESCRIPTION = 'Тестовое описание'
-SLUG = 'IamGroupSlug'
-ANOTHER_SLUG = 'IamAnotherGroupSlug'
-POST_TEXT = 'Тестовый текст поста'
 
 URL_REVERSE = {
     'profile1': reverse('posts:profile',
