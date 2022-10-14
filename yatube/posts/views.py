@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.cache import cache_page
@@ -46,23 +45,16 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    imposter = False
     post = get_object_or_404(Post, id=post_id)
     short_post = str(post.text)[:TITLE_LENGTH]
     if len(short_post) == TITLE_LENGTH:
         short_post += '...'
     posts = post.author.posts_by_author.all()
-    if post.author != request.user:
-        imposter = True
-    # sprint 6
-    form = CommentForm()
     comments = get_object_or_404(Post, id=post_id).comments.all()
-    # -----
     context = dict(post=post, posts=posts,
                    short_post=short_post,
-                   imposter=imposter,
-                   # sprint 6
-                   form=form,
+                   imposter=post.author != request.user,
+                   form=CommentForm(),
                    comments=comments
                    )
     return render(request, 'posts/post_detail.html', context)

@@ -20,15 +20,14 @@ class PostsURLTests(TestCase):
             text=POST_TEXT,
             author=User.objects.create_user(username=NAME_USER),
             pub_date=dt.now())
-        cls.list_addresses = [
-            '/unexisting_page/',
-            '/',
-            '/group/IamGroupSlug/',
-            '/profile/IamTester/',
-            f'/posts/{cls.post.pk}/',
-            f'/posts/{cls.post.pk}/edit/',
-            '/create/'
-        ]
+        cls.dict_access = {
+            '/': 'all',
+            '/group/IamGroupSlug/': 'all',
+            '/profile/IamTester/': 'all',
+            f'/posts/{cls.post.pk}/': 'all',
+            f'/posts/{cls.post.pk}/edit/': 'author',
+            '/create/': 'authorized'
+        }
         cls.dict_addresses_templates = {
             '/': 'posts/index.html',
             '/group/IamGroupSlug/': 'posts/group_list.html',
@@ -51,49 +50,40 @@ class PostsURLTests(TestCase):
         self.authorized_author = Client()
         self.authorized_author.force_login(self.post.author)
 
-    def test_access_create(self):
-        """Проверка доступа к созданию поста"""
-        response = self.authorized_client.get(self.list_addresses[6])
-        error_info = 'Авторизированный пользователь не может создавать посты'
-        self.assertEqual(response.status_code, HTTPStatus.OK, error_info)
-
     def test_general_access(self):
-        """Проверка доступа к общедоступным страницам"""
-        for address in self.list_addresses[:5]:
-            if address == '/unexisting_page/':
-                response = self.guest_client.get(address)
-                error_info = 'Обнаружилась несуществующая страница'
-                self.assertEqual(response.status_code,
-                                 HTTPStatus.NOT_FOUND, error_info)
+        """Проверка доступа неавторизированного пользователя/
+        проверка доступа к общедоступным страницам"""
+        response = self.guest_client.get('/fake_page/')
+        error_info = 'Обнаружилась несуществующая страница'
+        self.assertEqual(response.status_code,
+                         HTTPStatus.NOT_FOUND, error_info)
+        for address, access in self.dict_access.items():
+            if access == 'all':
+                with self.subTest(address=address):
+                    response = self.guest_client.get(address)
+                    self.assertEqual(response.status_code, HTTPStatus.OK)
             else:
-                response = self.guest_client.get(address)
-                error_info = (f'Любой пользователь '
-                              f'не получил доступ к {address}')
-                self.assertEqual(response.status_code,
-                                 HTTPStatus.OK, error_info)
+                with self.subTest(address=address):
+                    response = self.guest_client.get(address)
+                    self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_post_edit_not_authorized(self):
-        """Проверка доступа неавторизованного
-         пользователя к редактированию поста"""
-        response = self.guest_client.get(self.list_addresses[5])
-        error_info = ('Не сработал redirect '
-                      'для неавторизированного пользователя')
-        self.assertEqual(response.status_code, HTTPStatus.FOUND, error_info)
+    def test_author_access(self):
+        """Проверка доступа к 'авторским' страницам"""
+        for address, access in self.dict_access.items():
+            if access == 'author':
+                with self.subTest(address=address):
+                    response = self.authorized_author.get(address)
+                    self.assertEqual(response.status_code, HTTPStatus.OK)
+                    response = self.authorized_client.get(address)
+                    self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def test_post_edit_authorized_not_author(self):
-        """Проверка доступа авторизированного
-         не автора к редактированию поста"""
-        response = self.authorized_client.get(self.list_addresses[5])
-        error_info = 'Не сработал redirect для не автора поста'
-        self.assertEqual(response.status_code, HTTPStatus.FOUND, error_info)
-
-    def test_post_edit_authorized_author(self):
-        """Проверка доступа автора к редактированию поста"""
-        # здесь нужен именно автор!
-        response = self.authorized_author.get(self.list_addresses[5])
-        error_info = ('Автор не получил доступ'
-                      ' к редактированию своего поста')
-        self.assertEqual(response.status_code, HTTPStatus.OK, error_info)
+    def test_authorized_access(self):
+        """Страницы, доступные только авторизованным пользователям"""
+        for address, access in self.dict_access.items():
+            if access == 'authorized':
+                with self.subTest(address=address):
+                    response = self.authorized_client.get(address)
+                    self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_correct_templates(self):
         """URL-адрес использует соответствующий шаблон"""
@@ -108,7 +98,7 @@ class PostsURLTests(TestCase):
 
     def test_custom_error_templates(self):
         """Проверка вывода кастомной страницы ошибки 404."""
-        response = self.authorized_author.get(self.list_addresses[0])
+        response = self.authorized_author.get('/fake_page/')
         self.assertTemplateUsed(response,
                                 'core/404.html',
                                 'Неверный шаблон при ошибке 404')
