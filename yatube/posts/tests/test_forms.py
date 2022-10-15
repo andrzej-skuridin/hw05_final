@@ -11,7 +11,10 @@ from PIL import Image, ImageChops
 
 from ..forms import PostForm
 from ..models import Group, Post, User
-from ..consts import *
+from ..consts import (NAME_USER,
+                      NAME_GROUP,
+                      SLUG,
+                      POST_TEXT)
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)

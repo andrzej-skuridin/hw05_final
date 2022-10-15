@@ -12,5 +12,3 @@ DESCRIPTION = 'Тестовое описание'
 ANOTHER_NAME_USER = 'AnotherAuthor'
 ANOTHER_NAME_GROUP = 'IamAnotherGroup'
 ANOTHER_SLUG = 'IamAnotherGroupSlug'
-
-

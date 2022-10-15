@@ -10,7 +10,14 @@ import tempfile
 import shutil
 from PIL import Image, ImageChops
 
-from ..consts import *
+from ..consts import (NAME_USER,
+                      ANOTHER_NAME_USER,
+                      SLUG,
+                      ANOTHER_SLUG,
+                      NAME_GROUP,
+                      ANOTHER_NAME_GROUP,
+                      POST_TEXT,
+                      POSTS_COUNT)
 from ..forms import PostForm
 from ..models import Group, Follow, Post, User
 
@@ -32,9 +39,8 @@ URL_REVERSE = {
     'group2': reverse(
         'posts:group_list', kwargs={'slug': ANOTHER_SLUG}),
     'posts_unfollow2': reverse(
-                'posts:profile_unfollow',
-                kwargs={'username': ANOTHER_NAME_USER})
-
+        'posts:profile_unfollow',
+        kwargs={'username': ANOTHER_NAME_USER})
 }
 
 
