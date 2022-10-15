@@ -31,12 +31,10 @@ def profile(request, username):
     posts_author = get_object_or_404(User, username=username)
     following = False
     if request.user.is_authenticated:
-        author = get_object_or_404(User, username=username)
-        follow = Follow.objects.filter(
+        following = Follow.objects.filter(
             user=request.user,
-            author=author)
-        if follow.exists():
-            following = True
+            author=get_object_or_404(User, username=username)
+        ).exists()
     context = dict(posts=posts,
                    page_obj=paginator(request, posts),
                    following=following,
@@ -62,20 +60,16 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST or None,
-                        files=request.FILES or None)
-        if form.is_valid():
-            new_post = form.save(commit=False)
-            new_post.author = request.user
-            new_post.save()
-            messages.success(request, 'Пост добавлен.')
-            return redirect('posts:profile', request.user)
+    form = PostForm(request.POST or None,
+                    files=request.FILES or None)
+    if not form.is_valid():
         context = dict(form=form)
         return render(request, 'posts/create_post.html', context)
-    form = PostForm()
-    context = dict(form=form)
-    return render(request, 'posts/create_post.html', context)
+    new_post = form.save(commit=False)
+    new_post.author = request.user
+    new_post.save()
+    messages.success(request, 'Пост добавлен.')
+    return redirect('posts:profile', request.user)
 
 
 @login_required
@@ -83,19 +77,15 @@ def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if post.author != request.user:
         return redirect('posts:post_detail', post_id)
-    if request.method == 'POST':
-        form = PostForm(request.POST or None,
-                        instance=post,
-                        files=request.FILES or None)
-        if form.is_valid():
-            edited_post = form.save(commit=False)
-            edited_post.author = request.user
-            edited_post.save()
-            messages.success(request, 'Пост изменён.')
-            return redirect('posts:post_detail', post_id)
-        return render(request, 'posts/create_post.html',
-                      {'is_edit': True, 'form': form})
-    form = PostForm(instance=post)
+    form = PostForm(request.POST or None,
+                    instance=post,
+                    files=request.FILES or None)
+    if form.is_valid():
+        edited_post = form.save(commit=False)
+        edited_post.author = request.user
+        edited_post.save()
+        messages.success(request, 'Пост изменён.')
+        return redirect('posts:post_detail', post_id)
     return render(request, 'posts/create_post.html',
                   {'is_edit': True, 'form': form})
 
