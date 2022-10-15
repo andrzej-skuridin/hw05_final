@@ -132,7 +132,7 @@ class PostsFormTests(TestCase):
             data=form_data,
         )
         self.assertRedirects(
-            response, f'/auth/login/?next=/create/')
+            response, '/auth/login/?next=/create/')
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertEqual(Post.objects.count(), posts_count)
 

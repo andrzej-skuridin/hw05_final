@@ -29,13 +29,14 @@ URL_REVERSE = {
     'profile2': reverse('posts:profile',
                         kwargs={'username': ANOTHER_NAME_USER}),
     'posts_follow2': reverse(
-                'posts:profile_follow',
-                kwargs={'username': ANOTHER_NAME_USER}),
+        'posts:profile_follow',
+        kwargs={'username': ANOTHER_NAME_USER}),
     'posts_follow': reverse('posts:follow_index'),
     'post_create': reverse('posts:post_create'),
     'index': reverse('posts:index'),
-    'group1': reverse('posts:group_list',
-                      kwargs={'slug': SLUG}),
+    'group1': reverse(
+        'posts:group_list',
+        kwargs={'slug': SLUG}),
     'group2': reverse(
         'posts:group_list', kwargs={'slug': ANOTHER_SLUG}),
     'posts_unfollow2': reverse(

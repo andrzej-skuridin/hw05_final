@@ -4,7 +4,10 @@ from datetime import datetime as dt
 from http import HTTPStatus
 
 from ..models import Group, Post, User
-from ..consts import *
+from ..consts import (NAME_GROUP,
+                      SLUG,
+                      NAME_USER,
+                      POST_TEXT)
 
 
 class PostsURLTests(TestCase):
