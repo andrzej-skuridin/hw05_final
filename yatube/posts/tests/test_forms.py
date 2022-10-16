@@ -60,7 +60,14 @@ class PostsFormTests(TestCase):
             'post_edit': reverse(
                 'posts:post_edit', kwargs={'post_id': cls.post0.pk}),
             'add_comment': reverse(
-                'posts:add_comment', kwargs={'post_id': cls.post0.pk})
+                'posts:add_comment', kwargs={'post_id': cls.post0.pk}),
+            'redirect_from_create_to_login': '/auth/login/?next=/create/',
+            'redirect_from_edit_to_login':
+                f'/auth/login/?next=/posts/{cls.post0.pk}/edit/',
+            'redirect_to_post':
+                f'/posts/{cls.post0.pk}/',
+            'redirect_from_add_comment_to_login':
+                f'/auth/login/?next=/posts/{cls.post0.pk}/comment/'
         }
 
     def setUp(self):
@@ -126,7 +133,7 @@ class PostsFormTests(TestCase):
             data=form_data,
         )
         self.assertRedirects(
-            response, '/auth/login/?next=/create/')
+            response, self.url_reverse['redirect_from_create_to_login'])
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertEqual(Post.objects.count(), posts_count)
 
@@ -141,7 +148,7 @@ class PostsFormTests(TestCase):
         # здесь реверс в константу не внести из-за pk,
         # его в константы никак не внести
         self.assertRedirects(
-            response, f'/auth/login/?next=/posts/{self.post0.pk}/edit/')
+            response, self.url_reverse['redirect_from_edit_to_login'])
         self.post0.refresh_from_db()
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
@@ -160,7 +167,7 @@ class PostsFormTests(TestCase):
         # авторизированного должно перенаправить на детали поста,
         # неавторизированного - на страницу авторизации
         self.assertRedirects(response1,
-                             f'/posts/{self.post0.pk}/')
-        self.assertRedirects(response2,
-                             f'/auth/login/?next='
-                             f'/posts/{self.post0.pk}/comment/')
+                             self.url_reverse['redirect_to_post'])
+        self.assertRedirects(
+            response2,
+            self.url_reverse['redirect_from_add_comment_to_login'])
