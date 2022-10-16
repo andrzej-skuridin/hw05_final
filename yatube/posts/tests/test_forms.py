@@ -11,18 +11,14 @@ from PIL import Image, ImageChops
 
 from ..forms import PostForm
 from ..models import Group, Post, User
-from ..consts import (NAME_USER,
-                      NAME_GROUP,
-                      SLUG,
-                      POST_TEXT)
+from .consts import (NAME_USER,
+                     NAME_GROUP,
+                     SLUG,
+                     POST_TEXT,
+                     TEST_GIF)
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
-
-URL_REVERSE = {
-    'post_create': reverse('posts:post_create'),
-    'profile': reverse('posts:profile', kwargs={'username': NAME_USER}),
-}
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
@@ -30,19 +26,9 @@ class PostsFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        # Создаём картинку
-        cls.test_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
         cls.picture = SimpleUploadedFile(
             name='pic.gif',
-            content=cls.test_gif,
+            content=TEST_GIF,
             content_type='image/gif')
 
         # Создаём автора
@@ -63,6 +49,19 @@ class PostsFormTests(TestCase):
 
         # Создаём форму
         cls.form = PostForm
+
+        cls.url_reverse = {
+            'post_create': reverse(
+                'posts:post_create'),
+            'profile': reverse(
+                'posts:profile', kwargs={'username': NAME_USER}),
+            'post_detail': reverse(
+                'posts:post_detail', kwargs={'post_id': cls.post0.pk}),
+            'post_edit': reverse(
+                'posts:post_edit', kwargs={'post_id': cls.post0.pk}),
+            'add_comment': reverse(
+                'posts:add_comment', kwargs={'post_id': cls.post0.pk})
+        }
 
     def setUp(self):
         # Создаем авторизованный клиент
@@ -85,11 +84,11 @@ class PostsFormTests(TestCase):
             'image': self.picture
         }
         response = self.authorized_client.post(
-            URL_REVERSE['post_create'],
+            self.url_reverse['post_create'],
             data=form_data,
         )
         self.assertRedirects(
-            response, URL_REVERSE['profile'])
+            response, self.url_reverse['profile'])
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
         self.assertEqual(Post.objects.count(), posts_count + 1)
 
@@ -106,18 +105,13 @@ class PostsFormTests(TestCase):
         form_data = {
             'text': 'Новый текст поста'
         }
-        # здесь реверс в константу не внести из-за pk,
-        # его в константы никак не внести
         response = self.authorized_client.post(
-            path=reverse('posts:post_edit', kwargs={'post_id': self.post0.pk}),
+            path=self.url_reverse['post_edit'],
             data=form_data
         )
-        # здесь реверс в константу не внести из-за pk,
-        # его в константы никак не внести
         self.assertRedirects(
             response,
-            reverse(
-                'posts:post_detail', kwargs={'post_id': self.post0.pk}))
+            self.url_reverse['post_detail'])
         self.post0.refresh_from_db()
         self.assertEqual(self.post0.text, form_data['text'])
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
@@ -128,7 +122,7 @@ class PostsFormTests(TestCase):
             'text': POST_TEXT
         }
         response = self.guest_client.post(
-            URL_REVERSE['post_create'],
+            self.url_reverse['post_create'],
             data=form_data,
         )
         self.assertRedirects(
@@ -140,11 +134,8 @@ class PostsFormTests(TestCase):
         form_data = {
             'text': 'Новый текст поста'
         }
-        # здесь реверс в константу не внести из-за pk,
-        # его в константы никак не внести
         response = self.guest_client.post(
-            path=reverse('posts:post_edit',
-                         kwargs={'post_id': self.post0.pk}),
+            path=self.url_reverse['post_edit'],
             data=form_data
         )
         # здесь реверс в константу не внести из-за pk,
@@ -159,15 +150,12 @@ class PostsFormTests(TestCase):
         # проверяем доступ авторизированного пользователя
         comment_form = {'text': 'Текст комментария'}
         response1 = self.authorized_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post0.pk}),
+            self.url_reverse['add_comment'],
             data=comment_form)
-        print(response1.status_code)
         # проверяем доступ неавторизированного пользователя
         self.guest_client = Client()
         response2 = self.guest_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post0.pk}),
+            self.url_reverse['add_comment'],
             data=comment_form)
         # авторизированного должно перенаправить на детали поста,
         # неавторизированного - на страницу авторизации

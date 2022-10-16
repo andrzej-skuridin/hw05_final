@@ -1,11 +1,11 @@
 from django.test import TestCase
 
 from ..models import Group, Post, User, META_STR_LEN
-from ..consts import (NAME_USER,
-                      DESCRIPTION,
-                      POST_TEXT,
-                      NAME_GROUP,
-                      SLUG)
+from .consts import (NAME_USER,
+                     DESCRIPTION,
+                     POST_TEXT,
+                     NAME_GROUP,
+                     SLUG)
 
 
 class PostModelTest(TestCase):

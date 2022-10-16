@@ -10,14 +10,15 @@ import tempfile
 import shutil
 from PIL import Image, ImageChops
 
-from ..consts import (NAME_USER,
-                      ANOTHER_NAME_USER,
-                      SLUG,
-                      ANOTHER_SLUG,
-                      NAME_GROUP,
-                      ANOTHER_NAME_GROUP,
-                      POST_TEXT,
-                      POSTS_COUNT)
+from .consts import (NAME_USER,
+                     ANOTHER_NAME_USER,
+                     SLUG,
+                     ANOTHER_SLUG,
+                     NAME_GROUP,
+                     ANOTHER_NAME_GROUP,
+                     POST_TEXT,
+                     TEST_GIF)
+from ..consts import POSTS_COUNT
 from ..forms import PostForm
 from ..models import Group, Follow, Post, User
 
@@ -54,18 +55,9 @@ class PostsViewsTests(TestCase):
         cls.my_author1 = User.objects.create_user(username=NAME_USER)
         # Автор для теста подписки
         cls.my_author2 = User.objects.create_user(username=ANOTHER_NAME_USER)
-        # Создаём картинку
-        cls.test_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
         cls.picture = SimpleUploadedFile(
             name='pic.gif',
-            content=cls.test_gif,
+            content=TEST_GIF,
             content_type='image/gif')
 
         # Создаём группы
