@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import CheckConstraint, Q, F
+from django.db.models import CheckConstraint, F, Q
 
 from .consts import META_STR_LEN
 
